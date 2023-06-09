@@ -1,5 +1,6 @@
 # 用法：python main.py <双行文本文件路径> ，
 # 之后将【网易有道翻译】调到翻译功能，最大化，弹出的python窗口放到屏幕右中部即可点击开始。
+# 两个图片在不同的电脑上需要重新截取
 
 import sys, time, tkinter
 import os.path as op
@@ -12,12 +13,16 @@ COPY_PIC = 'copy.png'
 WAITING_TIME = 0.1
 
 # variable
-BASEDIR = ''
-SAVEDIR = ''
 WIDTH, HEIGHT = pyautogui.size()
-LABEL = ''
 
 
+# window
+class WINDOW:
+    root: tkinter.Tk
+    label: tkinter.Label
+
+
+# jump out
 class LongRet(Exception):
     pass
 
@@ -27,10 +32,10 @@ def youdao_translate(text: str) -> str:
     script_dir_path = op.split(op.realpath(__file__))[0]
 
     trans_button = pyautogui.locateOnScreen(
-        op.join(script_dir_path, TRANS_PIC), confidence=0.9
+        op.join(script_dir_path, TRANS_PIC), confidence=0.8
     )
     if trans_button is None:
-        label.config(text='can\'t find translate button in current window')
+        WINDOW.label.config(text='can\'t find translate button in current window')
         raise LongRet
 
     pyautogui.click(0.25 * WIDTH, 0.5 * HEIGHT)
@@ -62,15 +67,15 @@ def youdao_translate(text: str) -> str:
 
 def run() -> None:
     try:
-        root.title('working...')
-        label.config(text='working...')
+        WINDOW.root.title('working...')
+        WINDOW.label.config(text='working...')
 
         start_task()
 
-        label.config(text='done')
-        root.title('done')
+        WINDOW.label.config(text='done')
+        WINDOW.root.title('done')
     except LongRet:
-        root.title('pause')
+        WINDOW.root.title('pause')
         return
 
 
@@ -84,8 +89,8 @@ def start_task() -> None:
         lines = len(tmp.readlines())
 
     for num, line in enumerate(open(filename, encoding='utf8')):
-        label.config(text=f'working...{num}/{lines}')
-        label.update()
+        WINDOW.label.config(text=f'working...{num}/{lines}')
+        WINDOW.label.update()
 
         if line[0] == '○':
             cycle_index = 0
@@ -113,10 +118,10 @@ def start_task() -> None:
 
 
 if __name__ == '__main__':
-    root = tkinter.Tk()
-    root.attributes('-topmost', True)  # 保持置顶
-    root.geometry("300x100")
-    tkinter.Button(root, text="Run", command=run).pack()
-    label = tkinter.Label(root, text='Ready')
-    label.pack()
-    root.mainloop()
+    WINDOW.root = tkinter.Tk()
+    WINDOW.root.attributes('-topmost', True)  # 保持置顶
+    WINDOW.root.geometry("300x100")
+    tkinter.Button(WINDOW.root, text="Run", command=run).pack()
+    WINDOW.label = tkinter.Label(WINDOW.root, text='Ready')
+    WINDOW.label.pack()
+    WINDOW.root.mainloop()
