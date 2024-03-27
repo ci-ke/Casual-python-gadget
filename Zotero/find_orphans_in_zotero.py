@@ -1,12 +1,12 @@
 # Update this to match your data directory
-ZOTERO_STORAGE = r"C:\Users\DTK\Zotero"
-ZOTERO_STORAGE_FILES = r"D:\Workspace\OneDrive\vardtk\OneDrive\document\文献"
+ZOTERO_STORAGE = r'C:\Users\DTK\Zotero'
+ZOTERO_STORAGE_FILES = r'D:\Workspace\OneDrive\vardtk\OneDrive\document\文献'
 
 import sqlite3
 import os
 
 # Query all attachments
-dbh = sqlite3.connect(ZOTERO_STORAGE + "/zotero.sqlite")
+dbh = sqlite3.connect(ZOTERO_STORAGE + '/zotero.sqlite')
 c = dbh.cursor()
 c.execute('select path from itemAttachments where linkMode = 2')
 # 'select path from itemAttachments where contentType = "application/pdf" and linkMode = 2'
@@ -26,5 +26,8 @@ for key in c.fetchall():
     files.discard(filepath)
 
 # Loop over the non-existing files
-orphans = sorted(files)
-print("\n".join(orphans))
+if len(files) > 0:
+    orphans = sorted(files)
+    print('\n'.join(orphans))
+else:
+    print('no orphan.')
