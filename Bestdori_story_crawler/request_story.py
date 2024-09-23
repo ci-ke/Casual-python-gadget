@@ -15,11 +15,20 @@ import os
 from typing import Any, Dict, Optional, Sequence
 import requests  # type: ignore
 
-EVENT_SAVE_DIR = r'D:\Workspace\test\event_story'
-BAND_SAVE_DIR = r'D:\Workspace\test\band_story'
-MAIN_SAVE_DIR = r'D:\Workspace\test\main_story'
+### CONFIG
+LANG = 'cn'
+
+BASE_SAVE_DIR = r'D:\Workspace\test\bandori_story'
+EVENT_SAVE_DIR = BASE_SAVE_DIR + r'\event_story'
+BAND_SAVE_DIR = BASE_SAVE_DIR + r'\band_story'
+MAIN_SAVE_DIR = BASE_SAVE_DIR + r'\main_story'
+
+PROXY = None
+# PROXY = {'http': 'http://127.0.0.1:10809', 'https': 'http://127.0.0.1:10809'}
 
 
+### CONSTANT
+LANG_INDEX = {'jp': 0, 'en': 1, 'tw': 2, 'cn': 3, 'kr': 4}
 BAND_ID_NAME = {
     1: 'Poppin\'Party',
     2: 'Afterglow',
@@ -30,10 +39,6 @@ BAND_ID_NAME = {
     21: 'Morfonica',
     45: 'MyGO!!!!!',
 }
-
-PROXY = None
-# PROXY = {'http': 'http://127.0.0.1:10809', 'https': 'http://127.0.0.1:10809'}
-
 EVENT_IS_MAIN = [217]
 
 
@@ -58,16 +63,16 @@ def read_story_in_json(json_data: Dict[str, Dict[str, Any]]) -> str:
     return ret[:-1]
 
 
-def get_event_story_cn(event_id: int) -> None:
+def get_event_story(event_id: int) -> None:
     res = requests.get(
         f'https://bestdori.com/api/events/{event_id}.json', proxies=PROXY
     )
     res.raise_for_status()
     res_json: Dict[str, Any] = res.json()
 
-    event_name = res_json['eventName'][3]
+    event_name = res_json['eventName'][LANG_INDEX[LANG]]
     if event_name is None:
-        print(f'event {event_id} has no CN.')
+        print(f'event {event_id} has no {LANG.upper()}.')
         return
 
     event_filename = valid_filename(event_name)
@@ -76,13 +81,13 @@ def get_event_story_cn(event_id: int) -> None:
     os.makedirs(event_save_dir, exist_ok=True)
 
     for story in res_json['stories']:
-        name = f"{story['scenarioId']} {story['caption'][3]} {story['title'][3]}"
-        synopsis = story['synopsis'][3]
+        name = f"{story['scenarioId']} {story['caption'][LANG_INDEX[LANG]]} {story['title'][LANG_INDEX[LANG]]}"
+        synopsis = story['synopsis'][LANG_INDEX[LANG]]
         id = story['scenarioId']
 
         if ('bandStoryId' not in story) and (event_id not in EVENT_IS_MAIN):
             res2 = requests.get(
-                f'https://bestdori.com/assets/cn/scenario/eventstory/event{event_id}_rip/Scenario{id}.asset',
+                f'https://bestdori.com/assets/{LANG}/scenario/eventstory/event{event_id}_rip/Scenario{id}.asset',
                 proxies=PROXY,
             )
             res2.raise_for_status()
@@ -106,7 +111,7 @@ def get_event_story_cn(event_id: int) -> None:
         print(f'get event {event_id} {event_name} {name} done.')
 
 
-def get_band_story_cn(
+def get_band_story(
     want_band_id: Optional[int] = None, want_chapter_number: Optional[int] = None
 ) -> None:
     if want_band_id is not None:
@@ -134,26 +139,26 @@ def get_band_story_cn(
 
         band_name = BAND_ID_NAME[band_id]
 
-        if band_story['mainTitle'][3] == None:
+        if band_story['mainTitle'][LANG_INDEX[LANG]] == None:
             print(
-                f'band story {band_name} {band_story["mainTitle"][0]} {band_story["subTitle"][0]} has no CN.'
+                f'band story {band_name} {band_story["mainTitle"][0]} {band_story["subTitle"][0]} has no {LANG.upper()}.'
             )
             continue
 
         band_save_dir = os.path.join(
             BAND_SAVE_DIR,
             band_name,
-            f'{band_story["mainTitle"][3]} {band_story["subTitle"][3]}',
+            f'{band_story["mainTitle"][LANG_INDEX[LANG]]} {band_story["subTitle"][LANG_INDEX[LANG]]}',
         )
         os.makedirs(band_save_dir, exist_ok=True)
 
         for story in band_story['stories'].values():
-            name = f"{story['scenarioId']} {story['caption'][3]} {story['title'][3]}"
-            synopsis = story['synopsis'][3]
+            name = f"{story['scenarioId']} {story['caption'][LANG_INDEX[LANG]]} {story['title'][LANG_INDEX[LANG]]}"
+            synopsis = story['synopsis'][LANG_INDEX[LANG]]
             id = story['scenarioId']
 
             res2 = requests.get(
-                f'https://bestdori.com/assets/cn/scenario/band/{band_id:03}_rip/Scenario{id}.asset',
+                f'https://bestdori.com/assets/{LANG}/scenario/band/{band_id:03}_rip/Scenario{id}.asset',
                 proxies=PROXY,
             )
             res2.raise_for_status()
@@ -169,11 +174,11 @@ def get_band_story_cn(
                 f.write(text + '\n')
 
             print(
-                f'get band story {band_name} {band_story["mainTitle"][3]} {name} done.'
+                f'get band story {band_name} {band_story["mainTitle"][LANG_INDEX[LANG]]} {name} done.'
             )
 
 
-def get_main_story_cn(id_range: Optional[Sequence[int]] = None) -> None:
+def get_main_story(id_range: Optional[Sequence[int]] = None) -> None:
     res = requests.get(
         'https://bestdori.com/api/misc/mainstories.5.json', proxies=PROXY
     )
@@ -186,18 +191,18 @@ def get_main_story_cn(id_range: Optional[Sequence[int]] = None) -> None:
         if id_range is not None and int(strId) not in id_range:
             continue
 
-        if main_story['title'][3] == None:
+        if main_story['title'][LANG_INDEX[LANG]] == None:
             print(
-                f'main story {main_story["caption"][0]} {main_story["title"][0]} has no CN.'
+                f'main story {main_story["caption"][0]} {main_story["title"][0]} has no {LANG.upper()}.'
             )
             continue
 
-        name = f"{main_story['scenarioId']} {main_story['caption'][3]} {main_story['title'][3]}"
-        synopsis = main_story['synopsis'][3]
+        name = f"{main_story['scenarioId']} {main_story['caption'][LANG_INDEX[LANG]]} {main_story['title'][LANG_INDEX[LANG]]}"
+        synopsis = main_story['synopsis'][LANG_INDEX[LANG]]
         id = main_story['scenarioId']
 
         res2 = requests.get(
-            f'https://bestdori.com/assets/cn/scenario/main_rip/Scenario{id}.asset',
+            f'https://bestdori.com/assets/{LANG}/scenario/main_rip/Scenario{id}.asset',
             proxies=PROXY,
         )
         res2.raise_for_status()
@@ -226,7 +231,7 @@ def valid_filename(filename: str) -> str:
 
 
 if __name__ == '__main__':
-    get_main_story_cn()
-    get_band_story_cn()
+    get_main_story()
+    get_band_story()
     for i in range(1, 253):
-        get_event_story_cn(i)
+        get_event_story(i)
