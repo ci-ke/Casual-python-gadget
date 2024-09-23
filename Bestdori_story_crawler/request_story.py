@@ -34,6 +34,8 @@ BAND_ID_NAME = {
 PROXY = None
 # PROXY = {'http': 'http://127.0.0.1:10809', 'https': 'http://127.0.0.1:10809'}
 
+EVENT_IS_MAIN = [217]
+
 
 def read_story_in_json(json_data: Dict[str, Dict[str, Any]]) -> str:
     ret = ''
@@ -68,7 +70,9 @@ def get_event_story_cn(event_id: int) -> None:
         print(f'event {event_id} has no CN.')
         return
 
-    event_save_dir = os.path.join(EVENT_SAVE_DIR, f'{event_id} {event_name}')
+    event_filename = valid_filename(event_name)
+
+    event_save_dir = os.path.join(EVENT_SAVE_DIR, f'{event_id} {event_filename}')
     os.makedirs(event_save_dir, exist_ok=True)
 
     for story in res_json['stories']:
@@ -76,7 +80,7 @@ def get_event_story_cn(event_id: int) -> None:
         synopsis = story['synopsis'][3]
         id = story['scenarioId']
 
-        if not 'bandStoryId' in story:
+        if ('bandStoryId' not in story) and (event_id not in EVENT_IS_MAIN):
             res2 = requests.get(
                 f'https://bestdori.com/assets/cn/scenario/eventstory/event{event_id}_rip/Scenario{id}.asset',
                 proxies=PROXY,
@@ -85,10 +89,12 @@ def get_event_story_cn(event_id: int) -> None:
             res_json2: Dict[str, Dict[str, Any]] = res2.json()
 
             text = read_story_in_json(res_json2)
+        elif event_id in EVENT_IS_MAIN:
+            text = '见主线故事'
         else:
             text = '见乐队故事'
 
-        filename = name.replace('*', '＊')  # SAKURA*BLOOMING！
+        filename = valid_filename(name)
 
         with open(
             os.path.join(event_save_dir, filename) + '.txt', 'w', encoding='utf8'
@@ -207,6 +213,16 @@ def get_main_story_cn(id_range: Optional[Sequence[int]] = None) -> None:
             f.write(text + '\n')
 
         print(f'get main story {name} done.')
+
+
+def valid_filename(filename: str) -> str:
+    return (
+        filename.replace('*', '＊')
+        .replace(':', '：')
+        .replace('/', '')
+        .replace('?', '？')
+        .replace('"', "''")
+    )
 
 
 if __name__ == '__main__':
