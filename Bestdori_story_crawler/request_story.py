@@ -80,7 +80,7 @@ def get_event_story(event_id: int, lang: str = 'cn') -> None:
 
     for story in res_json['stories']:
         name = f"{story['scenarioId']} {story['caption'][LANG_INDEX[lang]]} {story['title'][LANG_INDEX[lang]]}"
-        synopsis = story['synopsis'][LANG_INDEX[lang]]
+        synopsis = story['synopsis'][LANG_INDEX[lang]].replace('\n', '')
         id = story['scenarioId']
 
         if ('bandStoryId' not in story) and (event_id not in EVENT_IS_MAIN):
