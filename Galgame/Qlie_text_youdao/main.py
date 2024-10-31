@@ -11,7 +11,7 @@ import pyperclip
 TRANS_PIC = 'translate.png'
 COPY_PIC = 'copy.png'
 WAITING_TIME = 0.1
-RETRY_TIME = 3
+RETRY_TIME = 2
 
 # variable
 WIDTH, HEIGHT = pyautogui.size()
