@@ -29,6 +29,9 @@ class LongRet(Exception):
 
 
 def youdao_translate(text: str) -> str:
+    if text.isspace():
+        return text
+
     pyperclip.copy(text)
     script_dir_path = op.split(op.realpath(__file__))[0]
 
