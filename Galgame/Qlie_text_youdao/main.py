@@ -32,6 +32,9 @@ def youdao_translate(text: str) -> str:
     if text.isspace():
         return text
 
+    if 'おまんこ' in text:
+        return text
+
     pyperclip.copy(text)
     script_dir_path = op.split(op.realpath(__file__))[0]
 
@@ -136,7 +139,7 @@ def start_task() -> None:
             elif cycle_index in (2, 3):
                 writefile.write('\n')
             else:
-                assert False, 'impossiable'
+                writefile.write(line)
 
             cycle_index += 1
 
